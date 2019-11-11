@@ -3,6 +3,9 @@
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you can use R Markdown syntax.*
 'I am feeling great'
+'I heard of this course from University of Eastern Finland Pages'
+'I expect to use R program and datascience tools for my research'
+
 
 Here is the link to my Girhub repository:
 https://github.com/mohanbabu29/IODS-project
@@ -11,5 +14,6 @@ and Here is the link to the my [diary page]:
 (https://mohanbabu29.github.io/IODS-project/).
 
 [^1]: Great Footnote
+
 
 
