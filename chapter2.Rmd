@@ -1,7 +1,90 @@
-# Insert chapter 2 title here
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Regression and model validation
 
 *Describe the work you have done this week and summarize your learning.*
 
 - Describe your work and results clearly. 
 - Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
 - Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+
+This week we understood data wrangling, perform explanatory examination and fit a simple linear model to the data.
+
+## Reading data
+
+Let's read the data
+```{r readdata,echo=TRUE,results='hide',message=FALSE,warning=FALSE}
+library(dplyr)
+learning2014 <-readxl::read_excel("~/IODS-project/data 2/learning2014.xlsx") %>%
+
+  mutate_at(vars(gender), factor)
+```
+
+```{r datastructure}
+str(learning2014)
+```
+# the data has 166 observations and 7 variables
+# Mostly likert scale (1-5) variables
+
+# Includes also Age (positive integers) and gender (as a two level factor: F and M)
+
+# Attitude = Global attitude toward statistics ~Da+Db+Dc+Dd+De+Df+Dg+Dh+Di+Dj
+
+# Points=Exam points (0-33)
+
+```{r datastructure}
+dim(learning2014)
+```
+
+library(ggplot2)
+
+```{r fig1, fig.path="figures/"}
+
+pairs(learning2014[!names(learning2014) %in% c("gender")],col=learning2014$gender)
+
+```
+```{r datastructure}
+summary(learning2014)
+```
+
+```{r fig2, fig.path="figures/", fig.dim=c(10,10), results='hide', message=FALSE}
+
+library(GGally)
+
+library(ggplot2)
+
+
+
+# create a more advanced plot matrix with ggpairs()
+
+ggpairs(learning2014, 
+
+        mapping = aes(col = gender, alpha = 0.3), 
+
+        lower = list(combo = wrap("facethist", bins = 20))
+
+        )
+
+```
+```{r}
+
+qplot(attitude, points, data = learning2014) + geom_smooth(method = "lm")
+
+```
+```{r, results='asis'}
+
+my_model <- lm(points ~ attitude, data = learning2014)
+
+results <- summary(my_model)
+knitr::kable(results$coefficients, digits=3, caption="Regression coefficients")
+
+```
+```{r fig3, fig.path="figures/"}
+
+plot(my_model, which=c(1,2,5))
+
+```
+"C:/Program Files/Git/bin/git" config --mohanbabu29
