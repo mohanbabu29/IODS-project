@@ -87,3 +87,4 @@ knitr::kable(results$coefficients, digits=3, caption="Regression coefficients")
 plot(my_model, which=c(1,2,5))
 
 ```
+"C:/Program Files/Git/bin/git" config --mohanbabu29
