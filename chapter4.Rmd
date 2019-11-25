@@ -1,0 +1,232 @@
+# chapter 4 exercise, Mohan Babu, 25.11.2019
+---
+title: "Chapter4"
+output: html_document
+---
+
+# 1. Loading the Boston data from MASS package
+
+```{r}
+library(MASS)
+str(Boston)
+dim(Boston)
+```
+
+====================================================
+  # The Boston data consists of housing values in suburbs of Boston with data frame consisting of 506 rows and 14 columns containing variables.
+========================================================  
+
+# 3. Graphical overview of Boston data
+library(ggplot2)
+
+```{r Boston, echo=FALSE}
+summary(Boston)
+```
+
+
+```{r echo=FALSE}
+pairs(Boston)
+```
+
+
+# 3. correlation matrix of Boston data
+```{r Boston, cor}
+cor_matrix<-cor(Boston)
+```
+
+# 4. print correlation matrix
+```{r, cor}
+print(cor_matrix)
+```
+
+
+# 4. visualize correlation matrix
+```{r}
+corrplot::corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex = 0.6)
+```
+
+======================
+Crime rates are strongly correlated with index of accessibility to radial highways
+======================
+
+# 4. Scaling the dataset and summary of the scaled data
+```{r Boston, scaling}
+boston_scaled<-scale(Boston)
+summary(boston_scaled)
+```
+
+
+# 4. creating quantile vector of crime rate
+```{r, quant}
+class(boston_scaled)
+boston_scaled<-as.data.frame(boston_scaled)
+```
+```{r qu}
+summary(boston_scaled$crim)
+```
+```{r quan}
+bins<-quantile(boston_scaled$crim)
+print(bins)
+```
+
+# 4. creating categorical variable of crime rate
+```{r Boston, categorical}
+crime<-cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, label<-c("low","med_low","med_high","high"))
+```
+```{r}
+table(crime)
+```
+
+# 4. Dropping old crime data
+```{r}
+boston_scaled <-dplyr::select(boston_scaled, -crim)
+```
+
+# 4. Adding the new categorical value to scaled data
+```{r}
+boston_scaled <-data.frame(boston_scaled, crime)
+```
+
+# 4. Dividing the dataset to train and test sets
+```{r}
+boston_scaled <-data.frame(boston_scaled, crime)
+n<-nrow(boston_scaled)
+```
+
+# 4. Dividing the dataset to train and test sets to include 80% of the data to the train set
+```{r}
+ind<-sample(n,size = n*0.8)
+```
+
+# 4.creating train set
+```{r}
+train <- boston_scaled[ind,]
+```
+# 4. Creating test set
+```{r}
+test <- boston_scaled[-ind,]
+```
+# 4. Saving the correct classes from the test data
+```{r}
+correct_classes<-(test$crime)
+```
+
+# 4. remove the crime variable from the test data
+```{r}
+test <- dplyr::select(test, -crime)
+```
+
+# 5. Fitting the linear discriminant analysis on the train set
+```{r}
+lda.fit <- lda(crime~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+black+lstat+medv, data = train)
+lda.fit
+```
+# 5. Drawing the LDA (bi)plot
+```{r}
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+```
+
+```{r}
+classes<-as.numeric(train$crime)
+```
+```{r}
+plot(lda.fit, col=classes, dimen = 2)
+lda.arrows(lda.fit, myscale = 1)
+```
+
+# 6. Fitting the linear discriminant analysis on the test set
+```{r}
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+
+=========================================
+Classifier seem to predict the crime rates correctly
+=========================================
+
+# 7,reloading the Boston data and scaling
+```{r}
+summary(Boston)
+class(Boston)
+dist_eu<-(Boston)
+summary(dist_eu)
+```
+
+# 7. k-means algorithm on the dataset and investigating optimal number of clusters
+```{r}
+set.seed(123)
+k_max <- (10)
+twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
+km<-kmeans(Boston, centers = 2)
+pairs(Boston[1:5], col = km$cluster)
+```
+
+===========================================================================================
+Optimal number of clusters seems to be 2. Crime rates seems to be highly correlated with nox
+===========================================================================================
+
+# Bonus exercise
+
+# performing k-means on original Boston data
+
+```{r}
+km <- kmeans(Boston, centers = 3)
+pairs(Boston[1:5], col = km$cluster)
+```
+# Scaling original Boston data
+```{r}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+class(boston_scaled)
+boston_scaled<-as.data.frame(boston_scaled)
+```
+
+# Fitting the linear discriminant analysis on the original Boston data
+```{r}
+lda.fit <- lda(km$cluster~ ., data = boston_scaled)
+lda.fit
+```
+# Drawing the LDA (bi)plot
+```{r Bos, LDA plot}
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+```
+
+```{r Boston, LDA}
+classes<-as.numeric(km$cluster)
+```
+```{r Bost, LDA}
+plot(lda.fit, col=classes, dimen = 2)
+lda.arrows(lda.fit, myscale = 1)
+```
+
+======================================================
+tax and rad are the most influential linear separators for the clusters
+======================================================
+
+# Super-bonus exercise
+```{r}
+model_predictors <- dplyr::select(train, -crime)
+```
+
+# checking the dimensions
+```{r}
+dim(model_predictors)
+dim(lda.fit$scaling)
+```
+
+
+
