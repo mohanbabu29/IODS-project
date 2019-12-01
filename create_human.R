@@ -16,32 +16,68 @@ summary(gii)
 # hd data included 195 observations of 8 varaibles and gii data includes 195 observations of 10 variables
 
 # Renaming variables with shorter names in hd data
-colnames(hd)
-colnames(hd)[colnames(hd)=="Human.Development.Index..HDI."] <- "HDI"
-colnames(hd)[colnames(hd)=="Life.Expectancy.at.Birth"] <- "LEAB"
-colnames(hd)[colnames(hd)=="Expected.Years.of.Education"] <- "EYOE"
-colnames(hd)[colnames(hd)=="Mean.Years.of.Education"] <- "MYOE"
-colnames(hd)[colnames(hd)=="Gross.National.Income..GNI..per.Capita"] <- "GNI"
-colnames(hd)[colnames(hd)=="GNI.per.Capita.Rank.Minus.HDI.Rank"] <- "GNI-HDI.Rank"
+names(hd)[1] <- 'HDI.Rank'
+names(hd)[2] <- 'Country'
+names(hd)[3] <- 'HDI'
+names(hd)[4] <- 'Life.Exp'
+names(hd)[5] <- 'Edu.Exp'
+names(hd)[6] <- 'Edu.Mean'
+names(hd)[7] <- 'GNI'
+names(hd)[8] <- 'GNI.Minus.Rank'
+
 
 # Renaming variables with shorter names in gii data
-colnames(gii)
-colnames(gii)[colnames(gii)=="Gender.Inequality.Index..GII."] <- "GII"
-colnames(gii)[colnames(gii)=="Maternal.Mortality.Ratio"] <- "MorRM"
-colnames(gii)[colnames(gii)=="Adolescent.Birth.Rate"] <- "AdoBirtR"
-colnames(gii)[colnames(gii)=="Percent.Representation.in.Parliament"] <- "PerRepPar"
-colnames(gii)[colnames(gii)=="Percent.Representation.in.Parliament"] <- "PerRepPar"
-colnames(gii)[colnames(gii)=="Population.with.Secondary.Education..Female."] <- "edu2F"
-colnames(gii)[colnames(gii)=="Population.with.Secondary.Education..Male."] <- "edu2M"
-colnames(gii)[colnames(gii)=="Labour.Force.Participation.Rate..Female."] <- "labF"
-colnames(gii)[colnames(gii)=="Labour.Force.Participation.Rate..Male."] <- "labM"
+names(gii)[1] <- 'GII.Rank'
+names(gii)[2] <- 'Country'
+names(gii)[3] <- 'GII'
+names(gii)[4] <- 'Mat.Mor'
+names(gii)[5] <- 'Ado.Birth'
+names(gii)[6] <- 'Parli.F'
+names(gii)[7] <- 'Edu2.F'
+names(gii)[8] <- 'Edu2.M'
+names(gii)[9] <- 'Labo.F'
+names(gii)[10] <-'Labo.M'
 
 # mutating gii data
 
-gii1<-mutate(gii,edu2r=edu2F/edu2M)
-gii2<-mutate(gii,labr=labF/labM)
+gii <- mutate(gii, Edu2.FM = Edu2.F/Edu2.M)
+gii <- mutate(gii, Labo.FM = Labo.F/Labo.M)
+
 
 # Joining the two datasets
-join_by<-c("Country")
-human<-inner_join(gii1, gii2, by=join_by, suffix=c(".gii1", ".gii2"))
+human <- inner_join(hd, gii, by = 'Country')
 str(human)
+
+# Writing the joined DF to a file.
+write.table(human, file = "human.csv", sep = "\t", col.names = TRUE)
+
+
+
+
+# Data wrangling for exercise 5, Mohan Babu, 1.12.2019
+
+
+# Loading human data and structure,dimensions of the data
+library(stringr)
+load(human)
+str(human)
+dim(human)
+summary(human)
+
+# human data set now consists of 195 observations and 19 variables including HDI.Rank, Country, HDI, Life.exp, Edu.Exp,Edu.mean,GNI etc.
+  
+  
+  
+# Mutating human data: transforming the GNI variable to numeric
+sapply(human, class)
+
+# Excluding unneeded variables
+keep_columns <- c("Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F")
+human <- select(human, one_of(keep_columns))
+
+#Removing all rows with missing values
+human<-na.omit(human)
+str(human)
+
+# Writing the joined DF to a file.
+write.table(human, file = "human.csv", sep = "\t", col.names = TRUE)
